@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CertifIQ Viewer - Pikachu PSA 10</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    .banner {
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+    }
+    .banner button {
+      background: #ffc107;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    .card-img {
+      width: 100%;
+      max-width: 300px;
+      margin: auto;
+      display: block;
+    }
+    .details, .ownership {
+      margin-top: 1.5rem;
+    }
+    .highlight {
+      background: #e0ffe0;
+      padding: 1rem;
+      border-left: 4px solid #4caf50;
+    }
+    .footer-banner {
+      margin-top: 2rem;
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .footer-banner button {
+      background: #28a745;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <h2>Upgrade your collectible to the blockchain</h2>
+    <p>Unlock digital ownership, trading, and collector perks</p>
+    <button onclick="alert('Upgrade coming soon!')">Upgrade Now</button>
+  </div>
+
+  <div class="container">
+    <img class="card-img" src="https://ipfs.io/ipfs/YOUR_IMAGE_CID" alt="Pikachu PSA 10" />
+    <h1>2023 Pokémon Mew EN - Pikachu (PSA 10)</h1>
+
+    <div class="details">
+      <p><strong>Certification #:</strong> 105883918</p>
+      <p><strong>Graded By:</strong> PSA</p>
+      <p><strong>Grade:</strong> GEM MT 10</p>
+      <p><strong>Rarity:</strong> Illustration Rare</p>
+      <p><strong>Year:</strong> 2023</p>
+      <p><strong>Set:</strong> Pokémon Mew EN</p>
+      <p><strong>View on PSA:</strong> <a href="https://www.psacard.com/cert/105883918" target="_blank">Click here</a></p>
+    </div>
+
+    <div class="ownership">
+      <h3>Ownership Status</h3>
+      <div id="ownership-status">Connect your wallet to verify...</div>
+    </div>
+  </div>
+
+  <div class="footer-banner">
+    <h2>Ready to secure your collectible on the blockchain?</h2>
+    <p>Mint a digital certificate that proves ownership and unlocks future perks.</p>
+    <button onclick="alert('Upgrade to NFT flow coming soon.')">Upgrade to NFT</button>
+  </div>
+
+  <script>
+    const contractAddress = "0xc524fAf4ca164ac1Fa06F63C4aef508B3C47C8c1";
+    const tokenId = 1; // update if needed
+    const abi = [
+      "function ownerOf(uint256 tokenId) external view returns (address)"
+    ];
+
+    async function checkOwnership() {
+      if (!window.ethereum) return;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
+
+      const contract = new ethers.Contract(contractAddress, abi, provider);
+      const owner = await contract.ownerOf(tokenId);
+
+      const display = document.getElementById("ownership-status");
+      if (owner.toLowerCase() === userAddress.toLowerCase()) {
+        display.innerHTML = `<div class='highlight'><strong>You are the verified owner of this collectible.</strong><br>Exclusive features unlocked.</div>`;
+      } else {
+        display.innerHTML = `<p>This collectible is currently registered to another wallet. View-only access enabled.</p>`;
+      }
+    }
+
+    window.onload = checkOwnership;
+  </script>
+</body>
+</html>
