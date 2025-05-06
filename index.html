@@ -117,7 +117,7 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const owner = await contract.ownerOf(3); // Check ownership of token ID 0
+          const owner = await contract.ownerOf(0); // Check ownership of token ID 0
 
           if (owner.toLowerCase() === userAddress.toLowerCase()) {
             document.getElementById("ownership-status").innerHTML = "✅ You are the verified owner of this collectible.";
