@@ -71,7 +71,7 @@
     </div>
 
     <div class="highlight" id="ownership-status">
-      <button id="connectButton">Connect Wallet</button>
+      Connect your wallet to verify ownership.
     </div>
   </div>
 
@@ -82,63 +82,40 @@
   </div>
 
   <script>
-    const metadataURL = "https://cloudflare-ipfs.com/ipfs/QmSGt5JTWLtwYDhdrKmtE9awy1k5GSDDJ2N9hE3KLkT87z/metadata.json"; // Replace with your metadata.json CID
+    const metadataCID = "QmSGt5JTWLtWYDhdrKmtE9awy1kSGSDDJ2N9hE3KLKt87z"; // Replace if needed
+    const gateways = [
+      "https://cloudflare-ipfs.com/ipfs/",
+      "https://ipfs.io/ipfs/",
+      "https://nftstorage.link/ipfs/"
+    ];
 
     async function loadMetadata() {
-      try {
-        const res = await fetch(metadataURL);
-        const data = await res.json();
-
-        document.getElementById("card-name").textContent = data.name;
-        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
-
-        const detailsContainer = document.getElementById("card-details");
-        detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
-
-        data.attributes.forEach(attr => {
-          const p = document.createElement("p");
-          p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
-          detailsContainer.appendChild(p);
-        });
-      } catch (err) {
-        document.getElementById("card-name").textContent = "Failed to load metadata.";
-        console.error("Metadata fetch error:", err);
-      }
-    }
-
-    async function connectWalletAndCheckOwnership() {
-      if (typeof window.ethereum !== 'undefined') {
+      for (const gateway of gateways) {
+        const metadataURL = `${gateway}${metadataCID}/metadata.json`;
         try {
-          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          const userAddress = accounts[0];
+          const res = await fetch(metadataURL);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
 
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const contractAddress = "0xD373372D9ee8b01C8a4C17F23d1275dA887e9a2a"; // Replace with your deployed contract address
-          const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-          const contract = new ethers.Contract(contractAddress, abi, provider);
+          document.getElementById("card-name").textContent = data.name;
+          document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
 
-          const owner = await contract.ownerOf(0); // Check ownership of token ID 0
+          const detailsContainer = document.getElementById("card-details");
+          detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
 
-          if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            document.getElementById("ownership-status").innerHTML = "✅ You are the verified owner of this collectible.";
-          } else {
-            document.getElementById("ownership-status").innerHTML = "ℹ️ You are viewing this as a guest. Only the owner can access full features.";
-          }
-        } catch (error) {
-          console.error("Wallet connection or contract error:", error);
-          document.getElementById("ownership-status").innerHTML = "⚠️ Could not verify ownership.";
+          data.attributes.forEach(attr => {
+            const p = document.createElement("p");
+            p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
+            detailsContainer.appendChild(p);
+          });
+          return;
+        } catch (err) {
+          console.warn("Gateway failed:", gateway, err.message);
         }
-      } else {
-        document.getElementById("ownership-status").innerHTML = "⚠️ MetaMask is not installed.";
       }
+      document.getElementById("card-name").textContent = "Failed to load metadata.";
     }
 
-    document.getElementById("connectButton").addEventListener("click", () => {
-      connectWalletAndCheckOwnership();
-      loadMetadata();
-    });
-
-    // Optionally auto-load metadata on page load
     loadMetadata();
   </script>
 </body>
