@@ -3,55 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CertifIQ Viewer</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <title>CertifIQ NFT Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
-    }
-    .banner, .footer-banner {
-      background: #1e1e1e;
-      color: white;
+      background: #f7f7f7;
+      color: #333;
       text-align: center;
-      padding: 1rem;
-    }
-    .banner button, .footer-banner button {
-      margin-top: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      background-color: #ffcc00;
-      border: none;
-      border-radius: 5px;
+      padding: 20px;
     }
     .container {
-      max-width: 900px;
-      margin: 2rem auto;
       background: white;
-      padding: 2rem;
-      border-radius: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    img.card-img {
+    img {
       max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto 1rem auto;
+      border-radius: 12px;
     }
-    .details {
-      margin-top: 1.5rem;
+    .banner {
+      background: black;
+      color: white;
+      padding: 16px;
+      margin: 20px 0;
     }
-    .details p {
-      margin: 0.4rem 0;
+    .button {
+      background-color: #f7c600;
+      color: black;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      display: inline-block;
+      margin: 10px 0;
     }
-    .highlight {
-      background-color: #e6ffe6;
-      padding: 1rem;
-      border-left: 4px solid #28a745;
-      margin-top: 1.5rem;
+    .ownership-status {
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #e8ffe8;
+      border: 1px solid #33cc33;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -59,26 +52,20 @@
   <div class="banner">
     <h2>Upgrade your collectible to the blockchain</h2>
     <p>Unlock digital ownership, trading, and collector perks</p>
-    <button onclick="alert('Upgrade path coming soon')">Upgrade Now</button>
+    <a href="#" class="button">Upgrade Now</a>
   </div>
 
   <div class="container">
-    <img class="card-img" id="card-image" alt="Card Image">
     <h1 id="card-name">Loading...</h1>
-
-    <div class="details" id="card-details">
-      <!-- Dynamic attributes will be inserted here -->
-    </div>
-
-    <div class="highlight" id="ownership-status">
-      Connect your wallet to verify ownership.
-    </div>
+    <img id="card-image" alt="Card Image" />
+    <div id="card-details"></div>
+    <div id="ownership-status" class="ownership-status" style="display:none;"></div>
   </div>
 
-  <div class="footer-banner">
+  <div class="banner">
     <h2>Want to secure your collectible on-chain?</h2>
     <p>Mint a digital certificate and join the future of collecting.</p>
-    <button onclick="alert('Minting coming soon')">Upgrade to NFT</button>
+    <a href="#" class="button">Upgrade to NFT</a>
   </div>
 
   <script>
@@ -91,33 +78,63 @@
     ];
 
     async function loadMetadata() {
+      let success = false;
       for (const gateway of gateways) {
-        const metadataURL = `${gateway}${metadataCID}/metadata.json`;
+        const url = `${gateway}${metadataCID}/${metadataPath}`;
         try {
-          const res = await fetch(metadataURL);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const res = await fetch(url);
+          if (!res.ok) continue;
           const data = await res.json();
-
           document.getElementById("card-name").textContent = data.name;
           document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
-
           const detailsContainer = document.getElementById("card-details");
           detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
-
           data.attributes.forEach(attr => {
             const p = document.createElement("p");
             p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
             detailsContainer.appendChild(p);
           });
-          return;
+          success = true;
+          break;
         } catch (err) {
-          console.warn("Gateway failed:", gateway, err.message);
+          console.error("Metadata fetch error from", url, err);
         }
       }
-      document.getElementById("card-name").textContent = "Failed to load metadata.";
+      if (!success) {
+        document.getElementById("card-name").textContent = "Failed to load metadata.";
+      }
     }
 
-    loadMetadata();
+    async function connectWalletAndCheckOwnership() {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+          const userAddress = accounts[0];
+
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const contractAddress = "0xD373372D9eeb801C8ac41f723d1275dA887e9a2a";
+          const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
+          const contract = new ethers.Contract(contractAddress, abi, provider);
+
+          const owner = await contract.ownerOf(0);
+          const statusEl = document.getElementById("ownership-status");
+          if (owner.toLowerCase() === userAddress.toLowerCase()) {
+            statusEl.textContent = "✅ You are the verified owner of this collectible.";
+          } else {
+            statusEl.textContent = "⚠️ You are not the current owner of this collectible.";
+          }
+          statusEl.style.display = "block";
+        } catch (err) {
+          console.error("Wallet connection or contract error:", err);
+        }
+      }
+    }
+
+    window.onload = () => {
+      loadMetadata();
+      connectWalletAndCheckOwnership();
+    };
   </script>
+  <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
 </body>
 </html>
