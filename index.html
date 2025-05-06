@@ -47,7 +47,7 @@
 
   <script>
     const metadataURL = "https://nftstorage.link/ipfs/QmYnNmMw5tbvgbiy9pk4XNm6CzRjZiMdT4XL5n4rwTGJvR/psa-105883918/metadata.json";
-    const contractAddress = "0xdf4324cc333659A531CE3c597A9E19e2A419DEaE";
+    const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
 
     async function loadMetadata() {
       try {
@@ -80,7 +80,7 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const tokenOwner = await contract.ownerOf(0);
+          const tokenOwner = await contract.ownerOf(4);
 
           const status = document.getElementById("ownership-status");
           if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
