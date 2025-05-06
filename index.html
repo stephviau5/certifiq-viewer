@@ -45,9 +45,11 @@
     <div id="ownership-status"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://ipfs.io/ipfs/QmakaFJu5dZ2mJeMbP97vhmex2jgeT8oCYJEi9dBzHr4VD";
+    const metadataURL = "https://nftstorage.link/ipfs/QmakaFJu5dZ2mJeMbP97vhmex2jgeT8oCYJEi9dBzHr4VD";
     const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
+    const tokenId = 3;
 
     async function loadMetadata() {
       try {
@@ -80,7 +82,7 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const tokenOwner = await contract.ownerOf(3);
+          const tokenOwner = await contract.ownerOf(tokenId);
 
           const status = document.getElementById("ownership-status");
           if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
@@ -90,15 +92,17 @@
           }
         } catch (err) {
           console.error("Wallet connection or ownership check failed:", err);
+          alert("Failed to verify ownership. See console for details.");
         }
       } else {
         alert("MetaMask is not installed. Please install it to continue.");
       }
     }
 
-    loadMetadata();
-    connectWalletAndCheckOwnership();
+    window.addEventListener("DOMContentLoaded", () => {
+      loadMetadata();
+      connectWalletAndCheckOwnership();
+    });
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </body>
 </html>
