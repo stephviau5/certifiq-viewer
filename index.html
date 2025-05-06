@@ -1,81 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CertifIQ Viewer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CertifIQ Card Viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 2em; }
-    .card { background: #1e1e1e; border-radius: 10px; padding: 20px; max-width: 500px; margin: auto; box-shadow: 0 0 10px #000; }
-    img { width: 100%; border-radius: 8px; margin-bottom: 1em; }
-    .status { padding: 10px; background: #222; border-left: 5px solid green; margin-bottom: 1em; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+      padding: 2em;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      margin: auto;
+      max-width: 500px;
+      border-radius: 1em;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 0.5em;
+      margin: 10px 0;
+    }
+    .attributes p {
+      margin: 0.3em 0;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2 id="card-name">Loading...</h2>
-    <img id="card-image" alt="Card Image" />
-    <div id="card-details"></div>
-    <div class="status" id="ownership-status">Connecting wallet...</div>
-  </div>
 
-  <script>
-    const metadataURL = "https://ipfs.io/ipfs/QmYnNmMw5tbvgbiy9pk4XNm6CzRjZiMdT4XL5n4rwTGJvR"; // updated CID JSON
+<div class="card">
+  <h1>Upgrade your collectible to the blockchain</h1>
+  <p>Unlock digital ownership, trading, and collector perks</p>
 
-    async function loadMetadata() {
-      try {
-        const res = await fetch(metadataURL);
-        const data = await res.json();
+  <button onclick="connectWalletAndCheckOwnership()">Connect Wallet</button>
+  <button onclick="loadMetadata()">Upgrade Now</button>
 
-        document.getElementById("card-name").textContent = data.name;
-        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+  <h2 id="card-name">Loading...</h2>
+  <img id="card-image" src="" alt="Card Image">
+  <p id="card-details"></p>
+  <div class="attributes" id="card-attributes"></div>
+  <p id="ownership-status"></p>
 
-        const detailsContainer = document.getElementById("card-details");
-        detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
+  <p>Want to secure your collectible on-chain?<br>Mint a digital certificate and join the future of collecting.</p>
+  <button>Upgrade to NFT</button>
+</div>
 
-        data.attributes.forEach(attr => {
-          const p = document.createElement("p");
-          p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
-          detailsContainer.appendChild(p);
-        });
-      } catch (err) {
-        document.getElementById("card-name").textContent = "Failed to load metadata.";
-        console.error("Metadata fetch error:", err);
-      }
-    }
+<script>
+const metadataURL = "https://ipfs.io/ipfs/QmYnNmMw5tbvgbiy9pk4XNm6CzRjZiMdT4XL5n4rwTGJvR";
 
-    async function connectWalletAndCheckOwnership() {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          const userAddress = accounts[0];
+async function loadMetadata() {
+  try {
+    const res = await fetch(metadataURL);
+    const data = await res.json();
 
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const contractAddress = "0xD373372D9eeb801C8ac41f723d1275dA887e9a2a"; // your contract
-          const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-          const contract = new ethers.Contract(contractAddress, abi, provider);
+    document.getElementById("card-name").textContent = data.name;
+    document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+    document.getElementById("card-details").innerHTML = `<strong>Description:</strong> ${data.description}`;
 
-          const ownerAddress = await contract.ownerOf(0); // or appropriate tokenId
-
-          const status = document.getElementById("ownership-status");
-          if (ownerAddress.toLowerCase() === userAddress.toLowerCase()) {
-            status.textContent = "✅ You are the verified owner of this collectible.";
-          } else {
-            status.textContent = "⚠️ You are not the owner of this collectible.";
-          }
-        } catch (err) {
-          console.error("Wallet connection or ownership check failed:", err);
-        }
-      } else {
-        alert("Please install MetaMask to use this feature.");
-      }
-    }
-
-    window.addEventListener("load", async () => {
-      await loadMetadata();
-      await connectWalletAndCheckOwnership();
+    const attributesContainer = document.getElementById("card-attributes");
+    attributesContainer.innerHTML = "";
+    data.attributes.forEach(attr => {
+      const p = document.createElement("p");
+      p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
+      attributesContainer.appendChild(p);
     });
-  </script>
+  } catch (err) {
+    document.getElementById("card-name").textContent = "Failed to load metadata.";
+    console.error("Metadata fetch error:", err);
+  }
+}
+
+async function connectWalletAndCheckOwnership() {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const userAddress = accounts[0];
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contractAddress = "0xD373372D9eeb801C8ac41f723d1275dA887e9a2a"; // Replace with your actual contract
+      const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
+      const contract = new ethers.Contract(contractAddress, abi, provider);
+
+      const tokenId = 0; // Adjust as needed
+      const owner = await contract.ownerOf(tokenId);
+
+      if (owner.toLowerCase() === userAddress.toLowerCase()) {
+        document.getElementById("ownership-status").innerText = "✅ You are the verified owner of this collectible.";
+      } else {
+        document.getElementById("ownership-status").innerText = "❌ You do not own this NFT.";
+      }
+    } catch (err) {
+      console.error("Wallet connection error:", err);
+      alert("Failed to verify ownership. See console for details.");
+    }
+  } else {
+    alert("Please install MetaMask to use this feature.");
+  }
+}
+</script>
+
 </body>
 </html>
