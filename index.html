@@ -1,107 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CertifIQ NFT Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      color: #333;
-      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
       padding: 20px;
+      text-align: center;
     }
     .container {
-      background: white;
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
     }
     img {
       max-width: 100%;
-      border-radius: 12px;
-    }
-    .banner {
-      background: black;
-      color: white;
-      padding: 16px;
-      margin: 20px 0;
-    }
-    .button {
-      background-color: #f7c600;
-      color: black;
-      padding: 12px 20px;
-      text-decoration: none;
+      height: auto;
       border-radius: 8px;
-      display: inline-block;
-      margin: 10px 0;
     }
-    .ownership-status {
-      padding: 10px;
-      margin-top: 10px;
-      background-color: #e8ffe8;
-      border: 1px solid #33cc33;
-      border-radius: 6px;
+    #card-details p {
+      text-align: left;
     }
   </style>
 </head>
 <body>
-  <div class="banner">
-    <h2>Upgrade your collectible to the blockchain</h2>
-    <p>Unlock digital ownership, trading, and collector perks</p>
-    <a href="#" class="button">Upgrade Now</a>
-  </div>
-
   <div class="container">
-    <h1 id="card-name">Loading...</h1>
-    <img id="card-image" alt="Card Image" />
-    <div id="card-details"></div>
-    <div id="ownership-status" class="ownership-status" style="display:none;"></div>
-  </div>
+    <h1>Upgrade your collectible to the blockchain</h1>
+    <p>Unlock digital ownership, trading, and collector perks</p>
+    <button onclick="connectWalletAndCheckOwnership()">Upgrade Now</button>
 
-  <div class="banner">
-    <h2>Want to secure your collectible on-chain?</h2>
-    <p>Mint a digital certificate and join the future of collecting.</p>
-    <a href="#" class="button">Upgrade to NFT</a>
+    <div id="card-display">
+      <h2 id="card-name">Loading...</h2>
+      <img id="card-image" alt="Card Image" />
+      <div id="card-details"></div>
+    </div>
+
+    <p>Want to secure your collectible on-chain?<br>
+      Mint a digital certificate and join the future of collecting.</p>
+    <button onclick="connectWalletAndCheckOwnership()">Upgrade to NFT</button>
   </div>
 
   <script>
-    const metadataCID = "QmakaFJu5dZ2mJeMbP97vhmex2jgeT8oCYJEi9dBzHr4VD";
-    const metadataPath = "psa-105883918/metadata.json";
-    const gateways = [
-      "https://cloudflare-ipfs.com/ipfs/",
-      "https://ipfs.io/ipfs/",
-      "https://nftstorage.link/ipfs/"
-    ];
+    const metadataURL = "https://ipfs.io/ipfs/QmYnNmMw5tbvgbiy9pk4XNm6CzRjZiMdT4XL5n4rwTGJvR";
 
     async function loadMetadata() {
-      let success = false;
-      for (const gateway of gateways) {
-        const url = `${gateway}${metadataCID}/${metadataPath}`;
-        try {
-          const res = await fetch(url);
-          if (!res.ok) continue;
-          const data = await res.json();
-          document.getElementById("card-name").textContent = data.name;
-          document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
-          const detailsContainer = document.getElementById("card-details");
-          detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
-          data.attributes.forEach(attr => {
-            const p = document.createElement("p");
-            p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
-            detailsContainer.appendChild(p);
-          });
-          success = true;
-          break;
-        } catch (err) {
-          console.error("Metadata fetch error from", url, err);
-        }
-      }
-      if (!success) {
+      try {
+        const res = await fetch(metadataURL);
+        const data = await res.json();
+
+        document.getElementById("card-name").textContent = data.name;
+        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+
+        const detailsContainer = document.getElementById("card-details");
+        detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
+
+        data.attributes.forEach(attr => {
+          const p = document.createElement("p");
+          p.innerHTML = `<strong>${attr.trait_type}:</strong> ${attr.value}`;
+          detailsContainer.appendChild(p);
+        });
+      } catch (err) {
         document.getElementById("card-name").textContent = "Failed to load metadata.";
+        console.error("Metadata fetch error:", err);
       }
     }
 
@@ -112,29 +79,29 @@
           const userAddress = accounts[0];
 
           const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const contractAddress = "0xD373372D9eeb801C8ac41f723d1275dA887e9a2a";
+          const contractAddress = "0xD373372D9ee8b01C8Ac41f723d1275dA887e9a2a"; // Replace with your deployed contract address
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const owner = await contract.ownerOf(0);
-          const statusEl = document.getElementById("ownership-status");
+          const tokenId = 0;
+          const owner = await contract.ownerOf(tokenId);
+
           if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            statusEl.textContent = "✅ You are the verified owner of this collectible.";
+            const msg = document.createElement("p");
+            msg.style.color = "green";
+            msg.textContent = "✔ You are the verified owner of this collectible.";
+            document.getElementById("card-display").appendChild(msg);
           } else {
-            statusEl.textContent = "⚠️ You are not the current owner of this collectible.";
+            alert("This wallet does not own the collectible.");
           }
-          statusEl.style.display = "block";
         } catch (err) {
-          console.error("Wallet connection or contract error:", err);
+          console.error("Wallet connection error:", err);
         }
+      } else {
+        alert("Please install MetaMask to continue.");
       }
     }
 
-    window.onload = () => {
-      loadMetadata();
-      connectWalletAndCheckOwnership();
-    };
+    window.onload = loadMetadata;
   </script>
-  <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-</body>
-</html>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min
