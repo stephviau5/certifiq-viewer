@@ -56,7 +56,9 @@
 </div>
 
 <script>
-const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9";
+
+const proxyUrl = "https://corsproxy.io/?";
+const metadataURL = proxyUrl + "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9";
     const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
     const tokenId = 4;
 
@@ -104,10 +106,11 @@ async function connectWalletAndCheckOwnership() {
       const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
       const contract = new ethers.Contract(contractAddress, abi, provider);
 
-      const tokenId = 4; // Adjust as needed
-      const owner = await contract.ownerOf(tokenId);
+const tokenOwner = await contract.ownerOf(4);
+const checksummedOwner = ethers.utils.getAddress(tokenOwner); // ✔ sanitize address
+const checksummedUser = ethers.utils.getAddress(userAddress); // ✔ sanitize address
 
-      if (isSameAddress(userAddress, tokenOwner)) {
+if (checksummedUser === checksummedOwner) {
   status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
 } else {
   status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
