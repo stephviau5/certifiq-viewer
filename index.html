@@ -98,7 +98,7 @@
           const provider = new ethers.providers.Web3Provider(window.ethereum);
 
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-          const contract = new ethers.Contract(ethers.utils.getAddress(contractAddress), abi, provider);
+          const contract = new ethers.Contract(contractAddress.toLowerCase(), abi, provider);
 
           const tokenOwner = ethers.utils.getAddress(await contract.ownerOf(4));
 
