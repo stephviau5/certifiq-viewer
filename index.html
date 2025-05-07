@@ -66,8 +66,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9?nocache=" + Date.now();
-    const contractAddress = "0xdf4324cc333659a531ce3c597a9e19e2a419deae";
+    const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9";
+    const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
+    const tokenId = 3;
 
     async function loadMetadata() {
       try {
@@ -75,9 +76,10 @@
         const data = await res.json();
 
         document.getElementById("card-name").textContent = data.name;
-        const imageSrc = data.image.startsWith("ipfs://") 
-        ? "https://ipfs.io/ipfs/" + data.image.slice(7)
-        : data.image;
+
+        const imageSrc = data.image.startsWith("ipfs://")
+          ? "https://nftstorage.link/ipfs/" + data.image.slice(7)
+          : data.image;
 
         document.getElementById("card-image").src = imageSrc;
 
@@ -102,13 +104,12 @@
           const provider = new ethers.providers.Web3Provider(window.ethereum);
 
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-          const contract = new ethers.Contract(contractAddress.toLowerCase(), abi, provider);
+          const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const tokenId = 3; // or whatever is actually minted
           const tokenOwner = await contract.ownerOf(tokenId);
-          
           const status = document.getElementById("ownership-status");
-          if (userAddress === tokenOwner) {
+
+          if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
             status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
           } else {
             status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
