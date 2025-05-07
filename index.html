@@ -100,11 +100,11 @@ async function connectWalletAndCheckOwnership() {
       const userAddress = accounts[0];
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contractAddress = "0xD373372D9eeb801C8ac41f723d1275dA887e9a2a"; // Replace with your actual contract
+      const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE"; // Replace with your actual contract
       const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
       const contract = new ethers.Contract(contractAddress, abi, provider);
 
-      const tokenId = 0; // Adjust as needed
+      const tokenId = 4; // Adjust as needed
       const owner = await contract.ownerOf(tokenId);
 
       if (isSameAddress(userAddress, tokenOwner)) {
