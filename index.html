@@ -66,7 +66,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://ipfs.io/ipfs/bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24/metadata.json";
+    const metadataURL = "https://gateway.pinata.cloud/ipfs/bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24/metadata.json";
     const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
     const tokenId = 3;
 
@@ -77,9 +77,7 @@
 
         document.getElementById("card-name").textContent = data.name;
 
-        const imageSrc = data.image.startsWith("ipfs://")
-  ? "https://ipfs.io/ipfs/" + data.image.slice(7)
-  : metadataURL.replace("metadata.json", "") + data.image;
+        const imageSrc = metadataURL.replace("metadata.json", "") + data.image;
 
         document.getElementById("card-image").src = imageSrc;
 
