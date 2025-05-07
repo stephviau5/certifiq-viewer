@@ -84,7 +84,7 @@
       if (typeof window.ethereum !== 'undefined') {
         try {
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          const userAddress = ethers.utils.getAddress(accounts[0]);
+          const userAddress = accounts[0].toLowerCase();
           statusEl.classList.remove("d-none", "alert-danger");
           statusEl.classList.add("alert", "alert-success");
           statusEl.textContent = `Wallet connected: ${userAddress}`;
