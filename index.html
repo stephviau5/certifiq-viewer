@@ -75,7 +75,9 @@
         const data = await res.json();
 
         document.getElementById("card-name").textContent = data.name;
-        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+        document.getElementById("card-image").src = data.image.startsWith("ipfs://")
+  ? "https://ipfs.io/ipfs/" + data.image.slice(7)
+  : data.image;
 
         const detailsContainer = document.getElementById("card-details");
         detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
@@ -100,7 +102,7 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const tokenOwner = await contract.ownerOf(2);
+          const tokenOwner = await contract.ownerOf(4);
           const status = document.getElementById("ownership-status");
 
           if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
