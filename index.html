@@ -66,7 +66,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://corsproxy.io/?" + encodeURIComponent("https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9");
+    const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9"); + Date.now();
     const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
 
     async function loadMetadata() {
@@ -100,8 +100,9 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress.toLowerCase(), abi, provider);
 
-          const tokenOwner = ethers.utils.getAddress(await contract.ownerOf(4));
-
+          const tokenId = 3; // or whatever is actually minted
+          const tokenOwner = await contract.ownerOf(tokenId);
+          
           const status = document.getElementById("ownership-status");
           if (userAddress === tokenOwner) {
             status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
