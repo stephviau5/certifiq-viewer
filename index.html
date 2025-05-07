@@ -78,8 +78,8 @@
         document.getElementById("card-name").textContent = data.name;
 
         const imageSrc = data.image.startsWith("ipfs://")
-          ? "https://nftstorage.link/ipfs/" + data.image.slice(7)
-          : data.image;
+        ? "https://ipfs.io/ipfs/" + data.image.slice(7)
+        : metadataURL.replace("metadata.json", "") + data.image;
 
         document.getElementById("card-image").src = imageSrc;
 
