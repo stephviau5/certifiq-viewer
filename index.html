@@ -91,6 +91,14 @@
         console.error("Metadata fetch error:", err);
       }
     }
+    for (let i = 0; i < 5; i++) {
+  try {
+    const owner = await contract.ownerOf(i);
+    console.log(`Token ID ${i} is owned by:`, owner);
+  } catch (e) {
+    console.log(`Token ID ${i} does not exist.`);
+  }
+}
 
     async function connectWalletAndCheckOwnership() {
       if (typeof window.ethereum !== 'undefined') {
@@ -102,7 +110,7 @@
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
-          const tokenOwner = await contract.ownerOf(3);
+          const tokenOwner = await contract.ownerOf(4); //make sure tokenID matches with the contract.
           const status = document.getElementById("ownership-status");
 
           if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
