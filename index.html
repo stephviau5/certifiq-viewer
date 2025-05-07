@@ -4,9 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CertifIQ Card Viewer</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
   <style>
     body {
-      font-family: Arial, sans-serif;
       background-color: #121212;
       color: white;
       display: flex;
@@ -29,46 +32,28 @@
       border-radius: 8px;
       margin-top: 10px;
     }
-    .verified {
-      background: #2e7d32;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
-      color: white;
-    }
-    .button-row {
-      margin-bottom: 20px;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      margin: 0 10px;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-    }
-    .connect { background-color: #1976d2; color: white; }
-    .upgrade { background-color: #ffb300; color: black; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="button-row">
-      <button class="connect" onclick="connectWalletAndCheckOwnership()">Connect Wallet</button>
-      <button class="upgrade">Upgrade Now</button>
+    <div id="wallet-status" class="alert d-none" role="alert"></div>
+
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="connectWalletAndCheckOwnership()">Connect Wallet</button>
+      <a href="https://opensea.io/collection/your-collection" target="_blank" class="btn btn-warning">View on OpenSea</a>
     </div>
 
     <h1 id="card-name">Loading...</h1>
-    <img id="card-image" src="" alt="Card Image" />
-    <div id="card-details"></div>
-    <div id="ownership-status"></div>
+    <img id="card-image" src="" alt="Card Image" class="img-fluid" />
+    <div id="card-details" class="mt-3"></div>
+    <div id="ownership-status" class="mt-3"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://gateway.pinata.cloud/ipfs/bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24/metadata.json";
-    const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
-    const tokenId = 6; // make sure this matches with the NFT you minted.
+    const metadataURL = "https://ipfs.io/ipfs/bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24/metadata.json";
+    const contractAddress = "0xdf4324cc333659a531ce3c597a9e19e2a419deae";
+    const tokenId = 3;
 
     async function loadMetadata() {
       try {
@@ -76,9 +61,9 @@
         const data = await res.json();
 
         document.getElementById("card-name").textContent = data.name;
-
-        const imageSrc = metadataURL.replace("metadata.json", "") + data.image;
-
+        const imageSrc = data.image.startsWith("ipfs://")
+          ? "https://ipfs.io/ipfs/" + data.image.slice(7)
+          : data.image;
         document.getElementById("card-image").src = imageSrc;
 
         const detailsContainer = document.getElementById("card-details");
@@ -95,29 +80,36 @@
     }
 
     async function connectWalletAndCheckOwnership() {
+      const statusEl = document.getElementById("wallet-status");
       if (typeof window.ethereum !== 'undefined') {
         try {
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
           const userAddress = ethers.utils.getAddress(accounts[0]);
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          statusEl.classList.remove("d-none", "alert-danger");
+          statusEl.classList.add("alert", "alert-success");
+          statusEl.textContent = `Wallet connected: ${userAddress}`;
 
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
           const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
           const contract = new ethers.Contract(contractAddress, abi, provider);
 
           const tokenOwner = await contract.ownerOf(tokenId);
           const status = document.getElementById("ownership-status");
-
           if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
-            status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
+            status.innerHTML = '<div class="alert alert-success">You are the verified owner of this collectible.</div>';
           } else {
-            status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
+            status.innerHTML = '<div class="alert alert-danger">You do not own this collectible.</div>';
           }
         } catch (err) {
           console.error("Wallet connection or ownership check failed:", err);
-          alert("Failed to verify ownership. See console for details.");
+          statusEl.classList.remove("d-none", "alert-success");
+          statusEl.classList.add("alert", "alert-danger");
+          statusEl.textContent = "Failed to connect wallet or verify ownership.";
         }
       } else {
-        alert("MetaMask is not installed. Please install it to continue.");
+        statusEl.classList.remove("d-none", "alert-success");
+        statusEl.classList.add("alert", "alert-warning");
+        statusEl.textContent = "MetaMask is not installed. Please install it to continue.";
       }
     }
 
