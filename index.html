@@ -66,8 +66,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9"); + Date.now();
-    const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
+    const metadataURL = "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9?nocache=" + Date.now();
+    const contractAddress = "0xdf4324cc333659a531ce3c597a9e19e2a419deae";
 
     async function loadMetadata() {
       try {
@@ -75,7 +75,11 @@
         const data = await res.json();
 
         document.getElementById("card-name").textContent = data.name;
-        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+        const imageSrc = data.image.startsWith("ipfs://") 
+        ? "https://ipfs.io/ipfs/" + data.image.slice(7)
+        : data.image;
+
+        document.getElementById("card-image").src = imageSrc;
 
         const detailsContainer = document.getElementById("card-details");
         detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
