@@ -58,7 +58,7 @@
 <script>
 
 const proxyUrl = "https://corsproxy.io/?";
-const metadataURL = proxyUrl + "https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9";
+const metadataURL = "https://corsproxy.io/?" + encodeURIComponent("https://ipfs.io/ipfs/QmTtH86RLvLVZAJoCcKpxwrp7qvqa1LZ8ecEBbvxRtzcn9");
     const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE";
     const tokenId = 4;
 
@@ -104,17 +104,19 @@ async function connectWalletAndCheckOwnership() {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contractAddress = "0xDf4324cc333659A531CE3c597A9E19e2A419DEaE"; // Replace with your actual contract
       const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-      const contract = new ethers.Contract(contractAddress, abi, provider);
 
-const tokenOwner = await contract.ownerOf(4);
+const contract = new ethers.Contract(ethers.utils.getAddress(contractAddress), abi, provider);
+const tokenOwner = ethers.utils.getAddress(await contract.ownerOf(4));
+const userChecksum = ethers.utils.getAddress(userAddress);
 const checksummedOwner = ethers.utils.getAddress(tokenOwner); // ✔ sanitize address
 const checksummedUser = ethers.utils.getAddress(userAddress); // ✔ sanitize address
 
-if (checksummedUser === checksummedOwner) {
+if (userChecksum === tokenOwner) {
   status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
 } else {
   status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
 }
+
 
     } catch (err) {
       console.error("Wallet connection error:", err);
