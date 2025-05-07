@@ -81,6 +81,17 @@ async function loadMetadata() {
     console.error("Metadata fetch error:", err);
   }
 }
+  function isSameAddress(addr1, addr2) {
+  try {
+    const a = ethers.utils.getAddress(addr1);
+    const b = ethers.utils.getAddress(addr2);
+    return a === b;
+  } catch (err) {
+    console.error("Invalid address detected:", err);
+    return false;
+  }
+}
+
 // connecting to wallet code is working. Don't change.
 async function connectWalletAndCheckOwnership() {
   if (typeof window.ethereum !== 'undefined') {
@@ -96,11 +107,12 @@ async function connectWalletAndCheckOwnership() {
       const tokenId = 0; // Adjust as needed
       const owner = await contract.ownerOf(tokenId);
 
-      if (owner.toLowerCase() === userAddress.toLowerCase()) {
-        document.getElementById("ownership-status").innerText = "✅ You are the verified owner of this collectible.";
-      } else {
-        document.getElementById("ownership-status").innerText = "❌ You do not own this NFT.";
-      }
+      if (isSameAddress(userAddress, tokenOwner)) {
+  status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
+} else {
+  status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
+}
+
     } catch (err) {
       console.error("Wallet connection error:", err);
       alert("Failed to verify ownership. See console for details.");
