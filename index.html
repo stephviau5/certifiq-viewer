@@ -57,7 +57,8 @@
         const data = await res.json();
 
         document.getElementById("card-name").textContent = data.name;
-        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://nftstorage.link/ipfs/");
+        document.getElementById("card-image").src = data.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+
 
         const detailsContainer = document.getElementById("card-details");
         detailsContainer.innerHTML = `<p><strong>Description:</strong> ${data.description}</p>`;
