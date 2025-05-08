@@ -80,7 +80,7 @@
 
 // If the image path is relative, prepend the full IPFS gateway path
 if (!imageSrc.startsWith('http') && !imageSrc.startsWith('ipfs://')) {
-  const imageBaseCID = "bafybeibcksvg..."; // << REPLACE this with the actual folder CID
+  const imageBaseCID = "bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24"; // << REPLACE this with the actual folder CID
   imageSrc = `https://gateway.pinata.cloud/ipfs/${imageBaseCID}/${imageSrc}`;
 }
 
