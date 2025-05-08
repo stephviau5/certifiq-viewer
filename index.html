@@ -76,11 +76,21 @@
 
         document.getElementById("card-name").textContent = data.name;
 
-        const imageSrc = data.image.startsWith("ipfs://")
-          ? "https://gateway.pinata.cloud/ipfs/" + data.image.slice(7)
-          : data.image;
+        let imageSrc = data.image;
 
-        document.getElementById("card-image").src = imageSrc;
+// If the image path is relative, prepend the full IPFS gateway path
+if (!imageSrc.startsWith('http') && !imageSrc.startsWith('ipfs://')) {
+  const imageBaseCID = "bafybeibcksvg..."; // << REPLACE this with the actual folder CID
+  imageSrc = `https://gateway.pinata.cloud/ipfs/${imageBaseCID}/${imageSrc}`;
+}
+
+// Optional: convert ipfs:// to https:// gateway if needed
+if (imageSrc.startsWith("ipfs://")) {
+  imageSrc = imageSrc.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+}
+
+document.getElementById("card-image").src = imageSrc;
+
         document.getElementById("card-description").textContent = data.description;
 
         const grid = document.getElementById("attributes-grid");
