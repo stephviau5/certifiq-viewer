@@ -89,7 +89,20 @@ if (imageSrc.startsWith("ipfs://")) {
   imageSrc = imageSrc.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
 }
 
-document.getElementById("card-image").src = imageSrc;
+// Set image and fallback if it fails to load
+const imgElement = document.getElementById("card-image");
+imgElement.onerror = () => {
+  console.warn("Primary IPFS gateway failed, trying fallback...");
+  if (imageSrc.includes("gateway.pinata.cloud")) {
+    imageSrc = imageSrc.replace("gateway.pinata.cloud", "ipfs.io");
+  } else {
+    imageSrc = imageSrc.replace("ipfs.io", "cloudflare-ipfs.com");
+  }
+  imgElement.src = imageSrc;
+};
+
+imgElement.src = imageSrc; // Set AFTER onerror is defined
+
 
         document.getElementById("card-description").textContent = data.description;
 
