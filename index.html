@@ -2,171 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CertifIQ Card Viewer</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: Arial, sans-serif;
-    }
-    .card {
-      background-color: #FFFFFF;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      max-width: 800px;
-      width: 100%;
-    }
-    img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .verified {
-      background: #2e7d32;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
-      color: white;
-    }
-    .alert-warning {
-      margin-bottom: 20px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon NFT Viewer</title>
 </head>
 <body>
-  <div class="card">
-    <div id="wallet-status" class="alert alert-warning" role="alert">
-      Wallet not connected.
-    </div>
-    <div class="d-flex justify-content-between mb-3">
-      <button class="btn btn-primary" onclick="connectWalletAndCheckOwnership()">Connect Wallet</button>
-      <a id="opensea-link" href="#" target="_blank" class="btn btn-warning">View on OpenSea</a>
-    </div>
+  <h1 id="cardName">Loading...</h1>
+  <img id="cardImage" src="" alt="Card Image" width="300"/>
+  <p id="setInfo"></p>
+  <p id="rarity"></p>
+  <p id="priceDisplay">Price: ...</p>
+  <button onclick="buyNFT()">Buy Now</button>
 
-    <h1 id="card-name">Loading...</h1>
-    <img id="card-image" src="" alt="Card Image" />
-
-    <div id="card-details" style="display: none;">
-      <p><strong>Description:</strong> <span id="card-description"></span></p>
-      <div class="row" id="attributes-grid"></div>
-    </div>
-
-    <div id="ownership-status"></div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    const metadataURL = "https://gateway.pinata.cloud/ipfs/bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24/metadata.json";
-    const contractAddress = "0x139F7D6b8Da2c870A8992437b0F02b96eCeeD934";
-    const tokenId = 3; // Update accordingly
+    const API_KEY = "5f65d52b-b940-4640-acf3-5bcc7d2dbd44";
+    const CARD_NAME = "bafkreiexavntvovnmw3i4lln3xzzx4hoikbyh5vacpmhm6vqsy7uzhwnty"; // <-- Change this or link to cert ID
+    const PRICE_MODIFIER = 25; // USD to add on top
 
-    let userAddress = null;
-
-    async function loadMetadata() {
-      try {
-        const res = await fetch(metadataURL);
-        const data = await res.json();
-
-        document.getElementById("card-name").textContent = data.name;
-
-        let imageSrc = data.image;
-
-// If the image path is relative, prepend the full IPFS gateway path
-if (!imageSrc.startsWith('http') && !imageSrc.startsWith('ipfs://')) {
-  const imageBaseCID = "bafybeihs6d4qmaypxjzkbs4lo2rqnzmdl4hygn6phjfq3yu5d5lgfopa24"; // << REPLACE this with the actual folder CID
-  imageSrc = `https://gateway.pinata.cloud/ipfs/${imageBaseCID}/${imageSrc}`;
-}
-
-// Optional: convert ipfs:// to https:// gateway if needed
-if (imageSrc.startsWith("ipfs://")) {
-  imageSrc = imageSrc.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
-}
-
-// Set image and fallback if it fails to load
-const imgElement = document.getElementById("card-image");
-imgElement.onerror = () => {
-  console.warn("Primary IPFS gateway failed, trying fallback...");
-  if (imageSrc.includes("gateway.pinata.cloud")) {
-    imageSrc = imageSrc.replace("gateway.pinata.cloud", "ipfs.io");
-  } else {
-    imageSrc = imageSrc.replace("ipfs.io", "cloudflare-ipfs.com");
-  }
-  imgElement.src = imageSrc;
-};
-
-imgElement.src = imageSrc; // Set AFTER onerror is defined
-
-
-        document.getElementById("card-description").textContent = data.description;
-
-        const grid = document.getElementById("attributes-grid");
-        grid.innerHTML = "";
-
-        for (let i = 0; i < data.attributes.length; i += 2) {
-          const col1 = data.attributes[i];
-          const col2 = data.attributes[i + 1];
-          const row = document.createElement("div");
-          row.classList.add("row", "mb-2");
-
-          const col1HTML = `<div class='col-md-6'><strong>${col1.trait_type}:</strong> ${col1.value}</div>`;
-          const col2HTML = col2 ? `<div class='col-md-6'><strong>${col2.trait_type}:</strong> ${col2.value}</div>` : "";
-
-          row.innerHTML = col1HTML + col2HTML;
-          grid.appendChild(row);
-        }
-      } catch (err) {
-        console.error("Metadata fetch error:", err);
-        document.getElementById("card-name").textContent = "Failed to load metadata.";
-      }
+    async function fetchCardData(name) {
+      const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(name)}"`, {
+        headers: { 'X-Api-Key': API_KEY }
+      });
+      const data = await response.json();
+      return data.data[0]; // take first match
     }
 
-    async function connectWalletAndCheckOwnership() {
-  if (typeof window.ethereum !== 'undefined') {
-    try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      userAddress = ethers.utils.getAddress(accounts[0]); // ✅ use checksummed address
-
-      document.getElementById("wallet-status").classList.replace("alert-warning", "alert-success");
-      document.getElementById("wallet-status").textContent = "Wallet connected: " + userAddress;
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const abi = ["function ownerOf(uint256 tokenId) public view returns (address)"];
-      const contract = new ethers.Contract(contractAddress, abi, provider);
-      const tokenOwner = await contract.ownerOf(tokenId);
-
-      const status = document.getElementById("ownership-status");
-
-      console.log("User Address:", userAddress);
-      console.log("Token Owner:", tokenOwner);
-
-      if (userAddress.toLowerCase() === tokenOwner.toLowerCase()) {
-        status.innerHTML = '<div class="verified">You are the verified owner of this collectible.</div>';
-        document.getElementById("card-details").style.display = "block";
-      } else {
-        status.innerHTML = '<div class="verified" style="background:#c62828;">You do not own this collectible.</div>';
-      }
-    } catch (err) {
-      console.error("Wallet connection or ownership check failed:", err);
-      alert("Failed to verify ownership. See console for details.");
+    async function getETHRate() {
+      const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
+      const data = await response.json();
+      return data.ethereum.usd;
     }
-  } else {
-    alert("MetaMask is not installed. Please install it to continue.");
-  }
-}
 
+    async function renderCard() {
+      const card = await fetchCardData(CARD_NAME);
+      const imageUrl = card.images.large;
+      const basePrice = card.tcgplayer?.prices?.holofoil?.market || 0;
+      const finalUSD = basePrice + PRICE_MODIFIER;
+      const ethRate = await getETHRate();
+      const finalETH = (finalUSD / ethRate).toFixed(5);
 
-    window.onload = () => {
-      loadMetadata();
-      const opensea = document.getElementById("opensea-link");
-      opensea.href = `https://opensea.io/assets/matic/${contractAddress}/${tokenId}`;
+      document.getElementById("cardName").innerText = card.name;
+      document.getElementById("cardImage").src = imageUrl;
+      document.getElementById("setInfo").innerText = `Set: ${card.set.name}`;
+      document.getElementById("rarity").innerText = `Rarity: ${card.rarity}`;
+      document.getElementById("priceDisplay").innerText = `Market Price: $${basePrice} + $${PRICE_MODIFIER} = $${finalUSD} (~${finalETH} ETH)`;
+
+      // Store for purchase trigger
+      window.finalETH = finalETH;
     }
+
+    async function buyNFT() {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const tx = {
+        from: accounts[0],
+        to: "0xd441BC823D5d63c7f1606C6f758f10C1DD1eAe7A", // Replace with your address
+        value: (window.finalETH * 1e18).toString(16)
+      };
+
+      await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [tx]
+      });
+    }
+
+    renderCard();
   </script>
 </body>
 </html>
