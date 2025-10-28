@@ -221,13 +221,13 @@
   </div>
 
   <script>
-    // util: get query params
+    // --- util: get query params ---
     function getParam(name){
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
     }
 
-    // basic DOM refs
+    // --- DOM refs ---
     const imgEl          = document.getElementById('cardImage');
     const itemTitleEl    = document.getElementById('itemTitle');
     const gradeBadgeEl   = document.getElementById('gradeBadge');
@@ -243,89 +243,96 @@
 
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    const grader = getParam('grader');
+    const grader = (getParam('grader') || '').toLowerCase(); // so "PSA" and "psa" both work
     const certId = getParam('id');
 
     graderValEl.textContent = grader || '—';
     certValEl.textContent = certId || '—';
 
-    // core: load metadata from local mirror first
     async function loadMetadata() {
-      if (!grader || !certId) {
-        showError("Missing grader or ID.");
-        return;
-      }
+        if (!grader || !certId) {
+          showError("Missing grader or ID.");
+          return;
+        }
 
-      const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+        // matches your repo path: data/psa/105883920.json
+        const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
 
-      let meta;
-      try {
-        const res = await fetch(localUrl, {cache:'no-store'});
-        if (!res.ok) throw new Error("local fetch failed " + res.status);
-        meta = await res.json();
-      } catch (e) {
-        // Optional TODO: fallback to IPFS gateway if you encode it.
-        // For example, if you have a deterministic CID map:
-        // const ipfsUrl = `https://ipfs.io/ipfs/${cidForThisCert}`;
-        // try that here.
-        console.warn("Local metadata not found.", e);
-        showError("No local metadata.");
-        return;
-      }
+        let meta;
+        try {
+          const res = await fetch(localUrl, {cache:'no-store'});
+          if (!res.ok) throw new Error("local fetch failed " + res.status);
+          meta = await res.json();
+        } catch (e) {
+          console.warn("Local metadata not found.", e);
+          showError("No local metadata.");
+          return;
+        }
 
-      render(meta);
+        render(meta);
     }
 
     function showError(_msg){
       errBox.style.display = 'block';
     }
 
+    // helper to pull an attribute by its trait_type from meta.attributes
+    function getAttr(meta, traitName){
+      if (!Array.isArray(meta.attributes)) return undefined;
+      const found = meta.attributes.find(a => a && a.trait_type === traitName);
+      return found ? found.value : undefined;
+    }
+
     function render(meta){
-      // This assumes your metadata.json looks roughly like:
-      // {
-      //   "title": "Charizard EX",
-      //   "grade": "PSA 10",
-      //   "itemName": "Charizard ex",
-      //   "setName": "Scarlet & Violet 151",
-      //   "year": "2023",
-      //   "attributes": ["Holo", "Full Art", "Secret Rare"],
-      //   "lastVerified": "2025-10-12T18:22:00Z",
-      //   "chainProof": "Polygon Tx ...",
-      //   "image": "https://ipfs.io/ipfs/Qm...cardFront.png"
-      // }
-      // You can adjust these mappings to match your real schema.
+      // Pull individual values from your JSON schema (no changes to your JSON) :contentReference[oaicite:2]{index=2}
+      const nameVal        = meta.name || '—';
+      const imgUrl         = meta.image || '';
+      const cardVal        = getAttr(meta, 'Card') || '—';
+      const setVal         = getAttr(meta, 'Set') || '—';
+      const variantVal     = getAttr(meta, 'Variant'); // for attributes list
+      const numberVal      = getAttr(meta, 'Number');  // for attributes list
+      const graderText     = getAttr(meta, 'Grader') || grader || '—';
+      const certNumText    = getAttr(meta, 'Certification Number') || certId || '—';
+      const officialGrade  = getAttr(meta, 'Official Grade') || 'UNVERIFIED';
+      const scoreVal       = getAttr(meta, 'CertifIQ Score'); // for attributes list
+      const versionVal     = getAttr(meta, 'Version');        // for attributes list
 
-      itemTitleEl.textContent  = meta.title || `${meta.itemName || 'Unknown Item'}`;
-      gradeBadgeEl.textContent = meta.grade || 'UNVERIFIED';
-      imgEl.src                = meta.image || '';
-      imgEl.alt                = meta.title || meta.itemName || 'Collectible image';
-
-      itemNameEl.textContent   = meta.itemName || '—';
-      itemSetEl.textContent    = meta.setName || '—';
-      itemYearEl.textContent   = meta.year || '—';
-
-      if (Array.isArray(meta.attributes)) {
-        itemAttrsEl.textContent = meta.attributes.join(', ');
-      } else if (typeof meta.attributes === 'string') {
-        itemAttrsEl.textContent = meta.attributes;
-      } else {
-        itemAttrsEl.textContent = '—';
+      // Year guess: try to extract a 4-digit year from setVal like "2024 Pokémon 151"
+      let yearGuess = '—';
+      if (setVal) {
+        const m = setVal.match(/\b(19|20)\d{2}\b/);
+        if (m) yearGuess = m[0];
       }
 
-      // blockchain / proof info
-      chainProofEl.textContent = meta.chainProof || '—';
+      // Build a human-readable string of "extra attributes" to show in the Attributes row
+      // We'll include: Variant, Number, CertifIQ Score, Version
+      const extras = [];
+      if (variantVal) extras.push(`${variantVal}`);
+      if (numberVal) extras.push(`#${numberVal}`);
+      if (scoreVal) extras.push(`Score ${scoreVal}/100`);
+      if (versionVal) extras.push(versionVal);
+      const extrasDisplay = extras.length ? extras.join(', ') : '—';
 
-      // last verified, nice format
-      if (meta.lastVerified){
-        try {
-          const d = new Date(meta.lastVerified);
-          lastVerifiedEl.textContent = d.toLocaleString();
-        } catch {
-          lastVerifiedEl.textContent = meta.lastVerified;
-        }
-      } else {
-        lastVerifiedEl.textContent = '—';
-      }
+      // Right now we don't have chain/tx info or verified timestamp in your JSON
+      const chainProofText = '—';
+      const lastVerifiedText = '—';
+
+      // Push to DOM
+      itemTitleEl.textContent  = nameVal;
+      gradeBadgeEl.textContent = officialGrade;
+
+      imgEl.src = imgUrl;
+      imgEl.alt = nameVal || 'Collectible image';
+
+      graderValEl.textContent    = graderText;
+      certValEl.textContent      = certNumText;
+      chainProofEl.textContent   = chainProofText;
+
+      itemNameEl.textContent     = cardVal || '—';
+      itemSetEl.textContent      = setVal || '—';
+      itemYearEl.textContent     = yearGuess || '—';
+      itemAttrsEl.textContent    = extrasDisplay;
+      lastVerifiedEl.textContent = lastVerifiedText;
     }
 
     loadMetadata();
