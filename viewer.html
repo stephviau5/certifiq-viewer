@@ -203,6 +203,14 @@
           <td class="label">Last Verified</td>
           <td class="value" id="lastVerified">—</td>
         </tr>
+        <tr>
+          <td class="label">External Link</td>
+          <td class="value" id="externalLink">—</td>
+        </tr>
+        <tr>
+          <td class="label">Report</td>
+          <td class="value" id="reportLink">—</td>
+        </tr>
       </table>
 
       <div id="errorArea" style="display:none;" class="errorBox">
@@ -238,6 +246,8 @@
     const itemSetEl      = document.getElementById('itemSet');
     const itemYearEl     = document.getElementById('itemYear');
     const itemAttrsEl    = document.getElementById('itemAttrs');
+    const externalLinkEl   = document.getElementById('externalLink');
+    const reportLinkEl     = document.getElementById('reportLink');
     const lastVerifiedEl = document.getElementById('lastVerified');
     const errBox         = document.getElementById('errorArea');
 
@@ -271,6 +281,7 @@
 
         render(meta);
     }
+
 
     function showError(_msg){
       errBox.style.display = 'block';
@@ -317,6 +328,11 @@
       const chainProofText = '—';
       const lastVerifiedText = '—';
 
+      // External + report links
+      const externalUrl = meta.external_url || '';
+      const reportUrl   = meta.report_url || '';
+
+
       // Push to DOM
       itemTitleEl.textContent  = nameVal;
       gradeBadgeEl.textContent = officialGrade;
@@ -333,7 +349,21 @@
       itemYearEl.textContent     = yearGuess || '—';
       itemAttrsEl.textContent    = extrasDisplay;
       lastVerifiedEl.textContent = lastVerifiedText;
+
     }
+
+    if (externalUrl) {
+  externalLinkEl.innerHTML = `<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`;
+} else {
+  externalLinkEl.textContent = '—';
+}
+
+if (reportUrl) {
+  reportLinkEl.innerHTML = `<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`;
+} else {
+  reportLinkEl.textContent = '—';
+}
+
 
     loadMetadata();
   </script>
