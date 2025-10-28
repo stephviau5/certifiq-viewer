@@ -228,7 +228,7 @@
     </footer>
   </div>
 
-  <script>
+<script>
   function getParam(name){
     const url = new URL(window.location.href);
     return url.searchParams.get(name);
@@ -252,11 +252,12 @@
 
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  // read URL params
   const grader = (getParam('grader') || '').toLowerCase();
   const certId = getParam('id');
 
   graderValEl.textContent = grader || '—';
-  certValEl.textContent = certId || '—';
+  certValEl.textContent   = certId || '—';
 
   async function loadMetadata() {
     if (!grader || !certId) {
@@ -264,7 +265,9 @@
       return;
     }
 
+    // example: data/psa/105883920.json
     const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+
     let meta;
     try {
       const res = await fetch(localUrl, { cache: 'no-store' });
@@ -283,6 +286,7 @@
     errBox.style.display = 'block';
   }
 
+  // helper to pull an attribute ("trait_type": "...", "value": "...")
   function getAttr(meta, traitName){
     if (!Array.isArray(meta.attributes)) return undefined;
     const found = meta.attributes.find(a => a && a.trait_type === traitName);
@@ -290,8 +294,10 @@
   }
 
   function render(meta){
+    // Map from your JSON file
     const nameVal        = meta.name || '—';
     const imgUrl         = meta.image || '';
+
     const cardVal        = getAttr(meta, 'Card') || '—';
     const setVal         = getAttr(meta, 'Set') || '—';
     const variantVal     = getAttr(meta, 'Variant');
@@ -302,15 +308,14 @@
     const scoreVal       = getAttr(meta, 'CertifIQ Score');
     const versionVal     = getAttr(meta, 'Version');
 
-    // NFT chain address (Polygon)
-    const nftAddress     = getAttr(meta, 'NFT Address') || meta.nft_address || '';
-
+    // Guess release year from Set string like "2024 Pokémon 151"
     let yearGuess = '—';
     if (setVal) {
       const m = setVal.match(/\b(19|20)\d{2}\b/);
       if (m) yearGuess = m[0];
     }
 
+    // Build the nice attributes row using your metadata
     const extras = [];
     if (variantVal) extras.push(`${variantVal}`);
     if (numberVal) extras.push(`#${numberVal}`);
@@ -318,42 +323,58 @@
     if (versionVal) extras.push(versionVal);
     const extrasDisplay = extras.length ? extras.join(', ') : '—';
 
+    // We don't currently store "last verified" in the JSON
     const lastVerifiedText = '—';
 
+    // External / report links from JSON
     const externalUrl = meta.external_url || '';
     const reportUrl   = meta.report_url || '';
 
-    // Push to DOM
+    // 🔗 Polygon chain proof link
+    // contract is fixed, certId is tokenId
+    const CONTRACT_ADDR = '0x702d27AF329c56FE91ef2e09Bf445f86f7Ab8846';
+    // short display like 0x702d...8846
+    const shortContract =
+      CONTRACT_ADDR.slice(0, 6) + '...' + CONTRACT_ADDR.slice(-4);
+
+    // full polygonscan URL
+    // https://polygonscan.com/token/<CONTRACT>?a=<CERT>
+    const polygonUrl = certId
+      ? `https://polygonscan.com/token/${CONTRACT_ADDR}?a=${encodeURIComponent(certId)}`
+      : `https://polygonscan.com/token/${CONTRACT_ADDR}`;
+
+    // --- push content into the DOM ---
+
+    // header
     itemTitleEl.textContent  = nameVal;
     gradeBadgeEl.textContent = officialGrade;
 
+    // main image
     imgEl.src = imgUrl;
     imgEl.alt = nameVal || 'Collectible image';
 
-    graderValEl.textContent    = graderText;
-    certValEl.textContent      = certNumText;
+    // left block under title
+    graderValEl.textContent = graderText;
+    certValEl.textContent   = certNumText;
 
-    // Add clickable Polygon link if available
-    if (nftAddress) {
-      const shortAddr = nftAddress.slice(0, 6) + '...' + nftAddress.slice(-4);
-      chainProofEl.innerHTML = `<a href="https://polygonscan.com/token/${nftAddress}" target="_blank" rel="noopener">${shortAddr}</a>`;
-    } else {
-      chainProofEl.textContent = '—';
-    }
+    // Chain / Proof row: clickable polygonscan link
+    chainProofEl.innerHTML = `<a href="${polygonUrl}" target="_blank" rel="noopener">${shortContract}</a>`;
 
+    // details table
     itemNameEl.textContent     = cardVal || '—';
     itemSetEl.textContent      = setVal || '—';
     itemYearEl.textContent     = yearGuess || '—';
     itemAttrsEl.textContent    = extrasDisplay;
     lastVerifiedEl.textContent = lastVerifiedText;
 
-    // External + report links
+    // External Link row
     if (externalUrl) {
       externalLinkEl.innerHTML = `<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`;
     } else {
       externalLinkEl.textContent = '—';
     }
 
+    // Report row
     if (reportUrl) {
       reportLinkEl.innerHTML = `<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`;
     } else {
@@ -363,6 +384,7 @@
 
   loadMetadata();
 </script>
+
 
 </body>
 </html>
