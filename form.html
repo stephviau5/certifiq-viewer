@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CertifiQ Backup Lookup</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    form {
+      background: #111;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid #333;
+      width: 300px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+    h2 {
+      color: #a855f7;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+    }
+    select,
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: 1px solid #333;
+      border-radius: 0.4rem;
+      background: #000;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    select:focus,
+    input:focus {
+      outline: none;
+      border-color: #a855f7;
+      box-shadow: 0 0 4px #a855f7;
+    }
+    button {
+      width: 100%;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 0.4rem;
+      background-color: #a855f7;
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #9333ea;
+    }
+  </style>
+</head>
+<body>
+  <form id="lookupForm">
+    <h2>CertifiQ Viewer</h2>
+
+    <label for="grader">Select Grader</label>
+    <select id="grader" required>
+      <option value="psa">PSA</option>
+      <option value="bgs">BGS</option>
+      <option value="cgc">CGC</option>
+      <option value="sgc">SGC</option>
+    </select>
+
+    <label for="certId">Certificate Number</label>
+    <input id="certId" type="text" placeholder="e.g. 105883920" required />
+
+    <button type="submit">View Certificate</button>
+  </form>
+
+  <script>
+    document.getElementById('lookupForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const grader = document.getElementById('grader').value.trim();
+      const certId = document.getElementById('certId').value.trim();
+      if (!grader || !certId) return;
+
+      // Redirect to viewer page with query parameters
+      window.location.href = `viewer.html?grader=${encodeURIComponent(grader)}&id=${encodeURIComponent(certId)}`;
+    });
+  </script>
+</body>
+</html>

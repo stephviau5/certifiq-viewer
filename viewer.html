@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CertifiQ Certificate Viewer</title>
+  <meta name="description" content="Verifiable collectible record powered by CertifiQ." />
+  <style>
+    :root {
+      --bg:#000;
+      --panel:#0f0f10;
+      --border:#2a2a2f;
+      --text-main:#fff;
+      --text-dim:#9ca3af;
+      --accent:#a855f7;
+      --radius-xl:1rem;
+      --radius-lg:.5rem;
+      --font:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Ubuntu,Cantarell,"Noto Sans",Helvetica,Arial,sans-serif;
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      background:radial-gradient(circle at 20% 20%,rgba(168,85,247,.15) 0%,rgba(0,0,0,0) 60%),var(--bg);
+      color:var(--text-main);
+      font-family:var(--font);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:2rem 1rem 4rem;
+    }
+    .wrap{
+      width:100%;
+      max-width:900px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1.5rem;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:0 30px 80px rgba(0,0,0,.9);
+      padding:1.5rem;
+    }
+    @media(max-width:700px){
+      .wrap{
+        grid-template-columns:1fr;
+        max-width:420px;
+      }
+    }
+
+    .mediaCard{
+      background:#000;
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:1rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    .mediaCard img{
+      width:100%;
+      height:auto;
+      max-width:320px;
+      border-radius:.5rem;
+      border:1px solid #333;
+      box-shadow:0 20px 60px rgba(0,0,0,.8);
+      background:#111;
+      object-fit:contain;
+    }
+    .metaBlock h1{
+      font-size:1rem;
+      font-weight:600;
+      margin:0 0 .5rem;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:baseline;
+      gap:.5rem;
+    }
+    .badge{
+      background:var(--accent);
+      color:#fff;
+      font-size:.7rem;
+      line-height:1.2;
+      font-weight:600;
+      border-radius:999px;
+      padding:.3rem .5rem;
+    }
+    .kv{
+      font-size:.8rem;
+      line-height:1.4;
+      margin:0 0 1rem;
+      color:var(--text-dim);
+    }
+    .kv strong{
+      color:var(--text-main);
+      font-weight:600;
+    }
+    .sectionTitle{
+      font-size:.75rem;
+      font-weight:600;
+      color:var(--text-main);
+      margin:1rem 0 .4rem;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+    .detailsTable{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.8rem;
+      line-height:1.4;
+    }
+    .detailsTable tr{
+      border-bottom:1px solid var(--border);
+    }
+    .detailsTable td{
+      padding:.5rem .25rem;
+      vertical-align:top;
+    }
+    .detailsTable td.label{
+      color:var(--text-dim);
+      width:35%;
+      font-weight:500;
+    }
+    .detailsTable td.value{
+      color:var(--text-main);
+      font-weight:600;
+      word-break:break-word;
+    }
+    .errorBox{
+      max-width:360px;
+      background:#1a1a1a;
+      border:1px solid #5a1a1a;
+      border-radius:var(--radius-lg);
+      color:#fff;
+      padding:1rem;
+      margin-top:2rem;
+      text-align:center;
+    }
+    .errorBox h2{
+      margin:0 0 .5rem;
+      color:#ff8080;
+      font-size:.9rem;
+      font-weight:600;
+    }
+    footer{
+      font-size:.7rem;
+      color:var(--text-dim);
+      text-align:center;
+      margin-top:1.5rem;
+      grid-column:1 / -1;
+    }
+    a.backLink{
+      display:inline-block;
+      font-size:.75rem;
+      margin-bottom:1rem;
+      color:var(--accent);
+      text-decoration:none;
+      font-weight:500;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="viewer">
+    <div style="grid-column:1 / -1;">
+      <a class="backLink" href="index.html">← New lookup</a>
+    </div>
+
+    <div class="mediaCard">
+      <img id="cardImage" alt="Collectible image" />
+    </div>
+
+    <div class="metaBlock">
+      <h1>
+        <span id="itemTitle">Loading…</span>
+        <span class="badge" id="gradeBadge"></span>
+      </h1>
+
+      <div class="kv">
+        <div><strong>Grader:</strong> <span id="graderVal"></span></div>
+        <div><strong>Cert #:</strong> <span id="certVal"></span></div>
+        <div><strong>Chain / Proof:</strong> <span id="chainProof"></span></div>
+      </div>
+
+      <div class="sectionTitle">Details</div>
+      <table class="detailsTable">
+        <tr>
+          <td class="label">Card / Item</td>
+          <td class="value" id="itemName">—</td>
+        </tr>
+        <tr>
+          <td class="label">Set / Series</td>
+          <td class="value" id="itemSet">—</td>
+        </tr>
+        <tr>
+          <td class="label">Year</td>
+          <td class="value" id="itemYear">—</td>
+        </tr>
+        <tr>
+          <td class="label">Attributes</td>
+          <td class="value" id="itemAttrs">—</td>
+        </tr>
+        <tr>
+          <td class="label">Last Verified</td>
+          <td class="value" id="lastVerified">—</td>
+        </tr>
+      </table>
+
+      <div id="errorArea" style="display:none;" class="errorBox">
+        <h2>Record Not Found</h2>
+        <p>
+          We couldn’t load metadata for this cert. It may be new, renamed,
+          or not mirrored yet.<br/><br/>
+          Please contact CertifiQ support.
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      © <span id="year"></span> CertifiQ Collectibles
+    </footer>
+  </div>
+
+  <script>
+    // util: get query params
+    function getParam(name){
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    // basic DOM refs
+    const imgEl          = document.getElementById('cardImage');
+    const itemTitleEl    = document.getElementById('itemTitle');
+    const gradeBadgeEl   = document.getElementById('gradeBadge');
+    const graderValEl    = document.getElementById('graderVal');
+    const certValEl      = document.getElementById('certVal');
+    const chainProofEl   = document.getElementById('chainProof');
+    const itemNameEl     = document.getElementById('itemName');
+    const itemSetEl      = document.getElementById('itemSet');
+    const itemYearEl     = document.getElementById('itemYear');
+    const itemAttrsEl    = document.getElementById('itemAttrs');
+    const lastVerifiedEl = document.getElementById('lastVerified');
+    const errBox         = document.getElementById('errorArea');
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const grader = getParam('grader');
+    const certId = getParam('id');
+
+    graderValEl.textContent = grader || '—';
+    certValEl.textContent = certId || '—';
+
+    // core: load metadata from local mirror first
+    async function loadMetadata() {
+      if (!grader || !certId) {
+        showError("Missing grader or ID.");
+        return;
+      }
+
+      const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+
+      let meta;
+      try {
+        const res = await fetch(localUrl, {cache:'no-store'});
+        if (!res.ok) throw new Error("local fetch failed " + res.status);
+        meta = await res.json();
+      } catch (e) {
+        // Optional TODO: fallback to IPFS gateway if you encode it.
+        // For example, if you have a deterministic CID map:
+        // const ipfsUrl = `https://ipfs.io/ipfs/${cidForThisCert}`;
+        // try that here.
+        console.warn("Local metadata not found.", e);
+        showError("No local metadata.");
+        return;
+      }
+
+      render(meta);
+    }
+
+    function showError(_msg){
+      errBox.style.display = 'block';
+    }
+
+    function render(meta){
+      // This assumes your metadata.json looks roughly like:
+      // {
+      //   "title": "Charizard EX",
+      //   "grade": "PSA 10",
+      //   "itemName": "Charizard ex",
+      //   "setName": "Scarlet & Violet 151",
+      //   "year": "2023",
+      //   "attributes": ["Holo", "Full Art", "Secret Rare"],
+      //   "lastVerified": "2025-10-12T18:22:00Z",
+      //   "chainProof": "Polygon Tx ...",
+      //   "image": "https://ipfs.io/ipfs/Qm...cardFront.png"
+      // }
+      // You can adjust these mappings to match your real schema.
+
+      itemTitleEl.textContent  = meta.title || `${meta.itemName || 'Unknown Item'}`;
+      gradeBadgeEl.textContent = meta.grade || 'UNVERIFIED';
+      imgEl.src                = meta.image || '';
+      imgEl.alt                = meta.title || meta.itemName || 'Collectible image';
+
+      itemNameEl.textContent   = meta.itemName || '—';
+      itemSetEl.textContent    = meta.setName || '—';
+      itemYearEl.textContent   = meta.year || '—';
+
+      if (Array.isArray(meta.attributes)) {
+        itemAttrsEl.textContent = meta.attributes.join(', ');
+      } else if (typeof meta.attributes === 'string') {
+        itemAttrsEl.textContent = meta.attributes;
+      } else {
+        itemAttrsEl.textContent = '—';
+      }
+
+      // blockchain / proof info
+      chainProofEl.textContent = meta.chainProof || '—';
+
+      // last verified, nice format
+      if (meta.lastVerified){
+        try {
+          const d = new Date(meta.lastVerified);
+          lastVerifiedEl.textContent = d.toLocaleString();
+        } catch {
+          lastVerifiedEl.textContent = meta.lastVerified;
+        }
+      } else {
+        lastVerifiedEl.textContent = '—';
+      }
+    }
+
+    loadMetadata();
+  </script>
+</body>
+</html>
