@@ -229,143 +229,140 @@
   </div>
 
   <script>
-    // --- util: get query params ---
-    function getParam(name){
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name);
+  function getParam(name){
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
+
+  // --- DOM refs ---
+  const imgEl          = document.getElementById('cardImage');
+  const itemTitleEl    = document.getElementById('itemTitle');
+  const gradeBadgeEl   = document.getElementById('gradeBadge');
+  const graderValEl    = document.getElementById('graderVal');
+  const certValEl      = document.getElementById('certVal');
+  const chainProofEl   = document.getElementById('chainProof');
+  const itemNameEl     = document.getElementById('itemName');
+  const itemSetEl      = document.getElementById('itemSet');
+  const itemYearEl     = document.getElementById('itemYear');
+  const itemAttrsEl    = document.getElementById('itemAttrs');
+  const externalLinkEl = document.getElementById('externalLink');
+  const reportLinkEl   = document.getElementById('reportLink');
+  const lastVerifiedEl = document.getElementById('lastVerified');
+  const errBox         = document.getElementById('errorArea');
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const grader = (getParam('grader') || '').toLowerCase();
+  const certId = getParam('id');
+
+  graderValEl.textContent = grader || '—';
+  certValEl.textContent = certId || '—';
+
+  async function loadMetadata() {
+    if (!grader || !certId) {
+      showError("Missing grader or ID.");
+      return;
     }
 
-    // --- DOM refs ---
-    const imgEl          = document.getElementById('cardImage');
-    const itemTitleEl    = document.getElementById('itemTitle');
-    const gradeBadgeEl   = document.getElementById('gradeBadge');
-    const graderValEl    = document.getElementById('graderVal');
-    const certValEl      = document.getElementById('certVal');
-    const chainProofEl   = document.getElementById('chainProof');
-    const itemNameEl     = document.getElementById('itemName');
-    const itemSetEl      = document.getElementById('itemSet');
-    const itemYearEl     = document.getElementById('itemYear');
-    const itemAttrsEl    = document.getElementById('itemAttrs');
-    const externalLinkEl   = document.getElementById('externalLink');
-    const reportLinkEl     = document.getElementById('reportLink');
-    const lastVerifiedEl = document.getElementById('lastVerified');
-    const errBox         = document.getElementById('errorArea');
-
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    const grader = (getParam('grader') || '').toLowerCase(); // so "PSA" and "psa" both work
-    const certId = getParam('id');
-
-    graderValEl.textContent = grader || '—';
-    certValEl.textContent = certId || '—';
-
-    async function loadMetadata() {
-        if (!grader || !certId) {
-          showError("Missing grader or ID.");
-          return;
-        }
-
-        // matches your repo path: data/psa/105883920.json
-        const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
-
-        let meta;
-        try {
-          const res = await fetch(localUrl, {cache:'no-store'});
-          if (!res.ok) throw new Error("local fetch failed " + res.status);
-          meta = await res.json();
-        } catch (e) {
-          console.warn("Local metadata not found.", e);
-          showError("No local metadata.");
-          return;
-        }
-
-        render(meta);
+    const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+    let meta;
+    try {
+      const res = await fetch(localUrl, { cache: 'no-store' });
+      if (!res.ok) throw new Error("local fetch failed " + res.status);
+      meta = await res.json();
+    } catch (e) {
+      console.warn("Local metadata not found.", e);
+      showError("No local metadata.");
+      return;
     }
 
+    render(meta);
+  }
 
-    function showError(_msg){
-      errBox.style.display = 'block';
+  function showError(_msg){
+    errBox.style.display = 'block';
+  }
+
+  function getAttr(meta, traitName){
+    if (!Array.isArray(meta.attributes)) return undefined;
+    const found = meta.attributes.find(a => a && a.trait_type === traitName);
+    return found ? found.value : undefined;
+  }
+
+  function render(meta){
+    const nameVal        = meta.name || '—';
+    const imgUrl         = meta.image || '';
+    const cardVal        = getAttr(meta, 'Card') || '—';
+    const setVal         = getAttr(meta, 'Set') || '—';
+    const variantVal     = getAttr(meta, 'Variant');
+    const numberVal      = getAttr(meta, 'Number');
+    const graderText     = getAttr(meta, 'Grader') || grader || '—';
+    const certNumText    = getAttr(meta, 'Certification Number') || certId || '—';
+    const officialGrade  = getAttr(meta, 'Official Grade') || 'UNVERIFIED';
+    const scoreVal       = getAttr(meta, 'CertifIQ Score');
+    const versionVal     = getAttr(meta, 'Version');
+
+    // NFT chain address (Polygon)
+    const nftAddress     = getAttr(meta, 'NFT Address') || meta.nft_address || '';
+
+    let yearGuess = '—';
+    if (setVal) {
+      const m = setVal.match(/\b(19|20)\d{2}\b/);
+      if (m) yearGuess = m[0];
     }
 
-    // helper to pull an attribute by its trait_type from meta.attributes
-    function getAttr(meta, traitName){
-      if (!Array.isArray(meta.attributes)) return undefined;
-      const found = meta.attributes.find(a => a && a.trait_type === traitName);
-      return found ? found.value : undefined;
+    const extras = [];
+    if (variantVal) extras.push(`${variantVal}`);
+    if (numberVal) extras.push(`#${numberVal}`);
+    if (scoreVal) extras.push(`Score ${scoreVal}/100`);
+    if (versionVal) extras.push(versionVal);
+    const extrasDisplay = extras.length ? extras.join(', ') : '—';
+
+    const lastVerifiedText = '—';
+
+    const externalUrl = meta.external_url || '';
+    const reportUrl   = meta.report_url || '';
+
+    // Push to DOM
+    itemTitleEl.textContent  = nameVal;
+    gradeBadgeEl.textContent = officialGrade;
+
+    imgEl.src = imgUrl;
+    imgEl.alt = nameVal || 'Collectible image';
+
+    graderValEl.textContent    = graderText;
+    certValEl.textContent      = certNumText;
+
+    // Add clickable Polygon link if available
+    if (nftAddress) {
+      const shortAddr = nftAddress.slice(0, 6) + '...' + nftAddress.slice(-4);
+      chainProofEl.innerHTML = `<a href="https://polygonscan.com/token/${nftAddress}" target="_blank" rel="noopener">${shortAddr}</a>`;
+    } else {
+      chainProofEl.textContent = '—';
     }
 
-    function render(meta){
-      // Pull individual values from your JSON schema (no changes to your JSON) :contentReference[oaicite:2]{index=2}
-      const nameVal        = meta.name || '—';
-      const imgUrl         = meta.image || '';
-      const cardVal        = getAttr(meta, 'Card') || '—';
-      const setVal         = getAttr(meta, 'Set') || '—';
-      const variantVal     = getAttr(meta, 'Variant'); // for attributes list
-      const numberVal      = getAttr(meta, 'Number');  // for attributes list
-      const graderText     = getAttr(meta, 'Grader') || grader || '—';
-      const certNumText    = getAttr(meta, 'Certification Number') || certId || '—';
-      const officialGrade  = getAttr(meta, 'Official Grade') || 'UNVERIFIED';
-      const scoreVal       = getAttr(meta, 'CertifIQ Score'); // for attributes list
-      const versionVal     = getAttr(meta, 'Version');        // for attributes list
+    itemNameEl.textContent     = cardVal || '—';
+    itemSetEl.textContent      = setVal || '—';
+    itemYearEl.textContent     = yearGuess || '—';
+    itemAttrsEl.textContent    = extrasDisplay;
+    lastVerifiedEl.textContent = lastVerifiedText;
 
-      // Year guess: try to extract a 4-digit year from setVal like "2024 Pokémon 151"
-      let yearGuess = '—';
-      if (setVal) {
-        const m = setVal.match(/\b(19|20)\d{2}\b/);
-        if (m) yearGuess = m[0];
-      }
-
-      // Build a human-readable string of "extra attributes" to show in the Attributes row
-      // We'll include: Variant, Number, CertifIQ Score, Version
-      const extras = [];
-      if (variantVal) extras.push(`${variantVal}`);
-      if (numberVal) extras.push(`#${numberVal}`);
-      if (scoreVal) extras.push(`Score ${scoreVal}/100`);
-      if (versionVal) extras.push(versionVal);
-      const extrasDisplay = extras.length ? extras.join(', ') : '—';
-
-      // Right now we don't have chain/tx info or verified timestamp in your JSON
-      const chainProofText = '—';
-      const lastVerifiedText = '—';
-
-      // External + report links
-      const externalUrl = meta.external_url || '';
-      const reportUrl   = meta.report_url || '';
-
-
-      // Push to DOM
-      itemTitleEl.textContent  = nameVal;
-      gradeBadgeEl.textContent = officialGrade;
-
-      imgEl.src = imgUrl;
-      imgEl.alt = nameVal || 'Collectible image';
-
-      graderValEl.textContent    = graderText;
-      certValEl.textContent      = certNumText;
-      chainProofEl.textContent   = chainProofText;
-
-      itemNameEl.textContent     = cardVal || '—';
-      itemSetEl.textContent      = setVal || '—';
-      itemYearEl.textContent     = yearGuess || '—';
-      itemAttrsEl.textContent    = extrasDisplay;
-      lastVerifiedEl.textContent = lastVerifiedText;
-
-    }
-
+    // External + report links
     if (externalUrl) {
-  externalLinkEl.innerHTML = `<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`;
-} else {
-  externalLinkEl.textContent = '—';
-}
+      externalLinkEl.innerHTML = `<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`;
+    } else {
+      externalLinkEl.textContent = '—';
+    }
 
-if (reportUrl) {
-  reportLinkEl.innerHTML = `<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`;
-} else {
-  reportLinkEl.textContent = '—';
-}
+    if (reportUrl) {
+      reportLinkEl.innerHTML = `<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`;
+    } else {
+      reportLinkEl.textContent = '—';
+    }
+  }
 
+  loadMetadata();
+</script>
 
-    loadMetadata();
-  </script>
 </body>
 </html>
