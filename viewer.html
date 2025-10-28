@@ -46,7 +46,6 @@
         max-width:420px;
       }
     }
-
     .mediaCard{
       background:#000;
       border:1px solid var(--border);
@@ -91,10 +90,7 @@
       margin:0 0 1rem;
       color:var(--text-dim);
     }
-    .kv strong{
-      color:var(--text-main);
-      font-weight:600;
-    }
+    .kv strong{ color:var(--text-main); font-weight:600; }
     .sectionTitle{
       font-size:.75rem;
       font-weight:600;
@@ -109,23 +105,10 @@
       font-size:.8rem;
       line-height:1.4;
     }
-    .detailsTable tr{
-      border-bottom:1px solid var(--border);
-    }
-    .detailsTable td{
-      padding:.5rem .25rem;
-      vertical-align:top;
-    }
-    .detailsTable td.label{
-      color:var(--text-dim);
-      width:35%;
-      font-weight:500;
-    }
-    .detailsTable td.value{
-      color:var(--text-main);
-      font-weight:600;
-      word-break:break-word;
-    }
+    .detailsTable tr{ border-bottom:1px solid var(--border); }
+    .detailsTable td{ padding:.5rem .25rem; vertical-align:top; }
+    .detailsTable td.label{ color:var(--text-dim); width:35%; font-weight:500; }
+    .detailsTable td.value{ color:var(--text-main); font-weight:600; word-break:break-word; }
     .errorBox{
       max-width:360px;
       background:#1a1a1a;
@@ -136,12 +119,7 @@
       margin-top:2rem;
       text-align:center;
     }
-    .errorBox h2{
-      margin:0 0 .5rem;
-      color:#ff8080;
-      font-size:.9rem;
-      font-weight:600;
-    }
+    .errorBox h2{ margin:0 0 .5rem; color:#ff8080; font-size:.9rem; font-weight:600; }
     footer{
       font-size:.7rem;
       color:var(--text-dim);
@@ -183,208 +161,113 @@
 
       <div class="sectionTitle">Details</div>
       <table class="detailsTable">
-        <tr>
-          <td class="label">Card / Item</td>
-          <td class="value" id="itemName">—</td>
-        </tr>
-        <tr>
-          <td class="label">Set / Series</td>
-          <td class="value" id="itemSet">—</td>
-        </tr>
-        <tr>
-          <td class="label">Year</td>
-          <td class="value" id="itemYear">—</td>
-        </tr>
-        <tr>
-          <td class="label">Attributes</td>
-          <td class="value" id="itemAttrs">—</td>
-        </tr>
-        <tr>
-          <td class="label">Last Verified</td>
-          <td class="value" id="lastVerified">—</td>
-        </tr>
-        <tr>
-          <td class="label">External Link</td>
-          <td class="value" id="externalLink">—</td>
-        </tr>
-        <tr>
-          <td class="label">Report</td>
-          <td class="value" id="reportLink">—</td>
-        </tr>
+        <tr><td class="label">Card / Item</td><td class="value" id="itemName">—</td></tr>
+        <tr><td class="label">Set / Series</td><td class="value" id="itemSet">—</td></tr>
+        <tr><td class="label">Year</td><td class="value" id="itemYear">—</td></tr>
+        <tr><td class="label">Attributes</td><td class="value" id="itemAttrs">—</td></tr>
+        <tr><td class="label">Last Verified</td><td class="value" id="lastVerified">—</td></tr>
+        <tr><td class="label">External Link</td><td class="value" id="externalLink">—</td></tr>
+        <tr><td class="label">Report</td><td class="value" id="reportLink">—</td></tr>
+        <tr><td class="label">Pointer Files</td><td class="value" id="pointerLinks">—</td></tr>
       </table>
 
       <div id="errorArea" style="display:none;" class="errorBox">
         <h2>Record Not Found</h2>
-        <p>
-          We couldn’t load metadata for this cert. It may be new, renamed,
-          or not mirrored yet.<br/><br/>
-          Please contact CertifiQ support.
-        </p>
+        <p>We couldn’t load metadata for this cert. It may be new, renamed,
+        or not mirrored yet.<br/><br/>Please contact CertifiQ support.</p>
       </div>
     </div>
 
-    <footer>
-      © <span id="year"></span> CertifiQ Collectibles
-    </footer>
+    <footer>© <span id="year"></span> CertifiQ Collectibles</footer>
   </div>
 
 <script>
-  function getParam(name){
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-  }
+function getParam(name){ return new URL(window.location.href).searchParams.get(name); }
 
-  // --- DOM refs ---
-  const imgEl          = document.getElementById('cardImage');
-  const itemTitleEl    = document.getElementById('itemTitle');
-  const gradeBadgeEl   = document.getElementById('gradeBadge');
-  const graderValEl    = document.getElementById('graderVal');
-  const certValEl      = document.getElementById('certVal');
-  const chainProofEl   = document.getElementById('chainProof');
-  const itemNameEl     = document.getElementById('itemName');
-  const itemSetEl      = document.getElementById('itemSet');
-  const itemYearEl     = document.getElementById('itemYear');
-  const itemAttrsEl    = document.getElementById('itemAttrs');
-  const externalLinkEl = document.getElementById('externalLink');
-  const reportLinkEl   = document.getElementById('reportLink');
-  const lastVerifiedEl = document.getElementById('lastVerified');
-  const errBox         = document.getElementById('errorArea');
+const imgEl = document.getElementById('cardImage');
+const itemTitleEl = document.getElementById('itemTitle');
+const gradeBadgeEl = document.getElementById('gradeBadge');
+const graderValEl = document.getElementById('graderVal');
+const certValEl = document.getElementById('certVal');
+const chainProofEl = document.getElementById('chainProof');
+const itemNameEl = document.getElementById('itemName');
+const itemSetEl = document.getElementById('itemSet');
+const itemYearEl = document.getElementById('itemYear');
+const itemAttrsEl = document.getElementById('itemAttrs');
+const externalLinkEl = document.getElementById('externalLink');
+const reportLinkEl = document.getElementById('reportLink');
+const pointerLinksEl = document.getElementById('pointerLinks');
+const lastVerifiedEl = document.getElementById('lastVerified');
+const errBox = document.getElementById('errorArea');
+document.getElementById('year').textContent = new Date().getFullYear();
 
-  document.getElementById('year').textContent = new Date().getFullYear();
+const grader = (getParam('grader') || '').toLowerCase();
+const certId = getParam('id');
+graderValEl.textContent = grader || '—';
+certValEl.textContent = certId || '—';
 
-  // read URL params
-  const grader = (getParam('grader') || '').toLowerCase();
-  const certId = getParam('id');
+async function loadMetadata(){
+  if(!grader || !certId){ showError("Missing grader or ID."); return; }
+  const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+  let meta;
+  try {
+    const res = await fetch(localUrl, {cache:'no-store'});
+    if(!res.ok) throw new Error("fetch failed");
+    meta = await res.json();
+  } catch(e){ console.warn("No local metadata.", e); showError("No local metadata."); return; }
+  render(meta);
+}
 
-  graderValEl.textContent = grader || '—';
-  certValEl.textContent   = certId || '—';
+function showError(){ errBox.style.display='block'; }
+function getAttr(meta,trait){ if(!Array.isArray(meta.attributes)) return; const f=meta.attributes.find(a=>a?.trait_type===trait); return f?f.value:undefined; }
 
-  async function loadMetadata() {
-    if (!grader || !certId) {
-      showError("Missing grader or ID.");
-      return;
-    }
+function render(meta){
+  const nameVal=meta.name||'—';
+  const imgUrl=meta.image||'';
+  const cardVal=getAttr(meta,'Card')||'—';
+  const setVal=getAttr(meta,'Set')||'—';
+  const variantVal=getAttr(meta,'Variant');
+  const numberVal=getAttr(meta,'Number');
+  const graderText=getAttr(meta,'Grader')||grader||'—';
+  const certNumText=getAttr(meta,'Certification Number')||certId||'—';
+  const officialGrade=getAttr(meta,'Official Grade')||'UNVERIFIED';
+  const scoreVal=getAttr(meta,'CertifIQ Score');
+  const versionVal=getAttr(meta,'Version');
+  let yearGuess='—'; if(setVal){ const m=setVal.match(/\b(19|20)\d{2}\b/); if(m) yearGuess=m[0]; }
+  const extras=[]; if(variantVal) extras.push(`${variantVal}`); if(numberVal) extras.push(`#${numberVal}`); if(scoreVal) extras.push(`Score ${scoreVal}/100`); if(versionVal) extras.push(versionVal);
+  const extrasDisplay=extras.length?extras.join(', '):'—';
+  const lastVerifiedText='—';
+  const externalUrl=meta.external_url||''; const reportUrl=meta.report_url||'';
 
-    // example: data/psa/105883920.json
-    const localUrl = `data/${encodeURIComponent(grader)}/${encodeURIComponent(certId)}.json`;
+  const CONTRACT_ADDR='0x702d27AF329c56FE91ef2e09Bf445f86f7Ab8846';
+  const shortContract=CONTRACT_ADDR.slice(0,6)+'...'+CONTRACT_ADDR.slice(-4);
+  const polygonUrl=certId?`https://polygonscan.com/token/${CONTRACT_ADDR}?a=${encodeURIComponent(certId)}`:`https://polygonscan.com/token/${CONTRACT_ADDR}`;
 
-    let meta;
-    try {
-      const res = await fetch(localUrl, { cache: 'no-store' });
-      if (!res.ok) throw new Error("local fetch failed " + res.status);
-      meta = await res.json();
-    } catch (e) {
-      console.warn("Local metadata not found.", e);
-      showError("No local metadata.");
-      return;
-    }
+  itemTitleEl.textContent=nameVal;
+  gradeBadgeEl.textContent=officialGrade;
+  imgEl.src=imgUrl; imgEl.alt=nameVal;
+  graderValEl.textContent=graderText;
+  certValEl.textContent=certNumText;
+  chainProofEl.innerHTML=`<a href="${polygonUrl}" target="_blank" rel="noopener">${shortContract}</a>`;
+  itemNameEl.textContent=cardVal; itemSetEl.textContent=setVal; itemYearEl.textContent=yearGuess; itemAttrsEl.textContent=extrasDisplay;
+  lastVerifiedEl.textContent=lastVerifiedText;
 
-    render(meta);
-  }
+  externalLinkEl.innerHTML=externalUrl?`<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`:'—';
+  reportLinkEl.innerHTML=reportUrl?`<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`:'—';
 
-  function showError(_msg){
-    errBox.style.display = 'block';
-  }
-
-  // helper to pull an attribute ("trait_type": "...", "value": "...")
-  function getAttr(meta, traitName){
-    if (!Array.isArray(meta.attributes)) return undefined;
-    const found = meta.attributes.find(a => a && a.trait_type === traitName);
-    return found ? found.value : undefined;
-  }
-
-  function render(meta){
-    // Map from your JSON file
-    const nameVal        = meta.name || '—';
-    const imgUrl         = meta.image || '';
-
-    const cardVal        = getAttr(meta, 'Card') || '—';
-    const setVal         = getAttr(meta, 'Set') || '—';
-    const variantVal     = getAttr(meta, 'Variant');
-    const numberVal      = getAttr(meta, 'Number');
-    const graderText     = getAttr(meta, 'Grader') || grader || '—';
-    const certNumText    = getAttr(meta, 'Certification Number') || certId || '—';
-    const officialGrade  = getAttr(meta, 'Official Grade') || 'UNVERIFIED';
-    const scoreVal       = getAttr(meta, 'CertifIQ Score');
-    const versionVal     = getAttr(meta, 'Version');
-
-    // Guess release year from Set string like "2024 Pokémon 151"
-    let yearGuess = '—';
-    if (setVal) {
-      const m = setVal.match(/\b(19|20)\d{2}\b/);
-      if (m) yearGuess = m[0];
-    }
-
-    // Build the nice attributes row using your metadata
-    const extras = [];
-    if (variantVal) extras.push(`${variantVal}`);
-    if (numberVal) extras.push(`#${numberVal}`);
-    if (scoreVal) extras.push(`Score ${scoreVal}/100`);
-    if (versionVal) extras.push(versionVal);
-    const extrasDisplay = extras.length ? extras.join(', ') : '—';
-
-    // We don't currently store "last verified" in the JSON
-    const lastVerifiedText = '—';
-
-    // External / report links from JSON
-    const externalUrl = meta.external_url || '';
-    const reportUrl   = meta.report_url || '';
-
-    // 🔗 Polygon chain proof link
-    // contract is fixed, certId is tokenId
-    const CONTRACT_ADDR = '0x702d27AF329c56FE91ef2e09Bf445f86f7Ab8846';
-    // short display like 0x702d...8846
-    const shortContract =
-      CONTRACT_ADDR.slice(0, 6) + '...' + CONTRACT_ADDR.slice(-4);
-
-    // full polygonscan URL
-    // https://polygonscan.com/token/<CONTRACT>?a=<CERT>
-    const polygonUrl = certId
-      ? `https://polygonscan.com/token/${CONTRACT_ADDR}?a=${encodeURIComponent(certId)}`
-      : `https://polygonscan.com/token/${CONTRACT_ADDR}`;
-
-    // --- push content into the DOM ---
-
-    // header
-    itemTitleEl.textContent  = nameVal;
-    gradeBadgeEl.textContent = officialGrade;
-
-    // main image
-    imgEl.src = imgUrl;
-    imgEl.alt = nameVal || 'Collectible image';
-
-    // left block under title
-    graderValEl.textContent = graderText;
-    certValEl.textContent   = certNumText;
-
-    // Chain / Proof row: clickable polygonscan link
-    chainProofEl.innerHTML = `<a href="${polygonUrl}" target="_blank" rel="noopener">${shortContract}</a>`;
-
-    // details table
-    itemNameEl.textContent     = cardVal || '—';
-    itemSetEl.textContent      = setVal || '—';
-    itemYearEl.textContent     = yearGuess || '—';
-    itemAttrsEl.textContent    = extrasDisplay;
-    lastVerifiedEl.textContent = lastVerifiedText;
-
-    // External Link row
-    if (externalUrl) {
-      externalLinkEl.innerHTML = `<a href="${externalUrl}" target="_blank" rel="noopener">Open in CertifiQ</a>`;
-    } else {
-      externalLinkEl.textContent = '—';
-    }
-
-    // Report row
-    if (reportUrl) {
-      reportLinkEl.innerHTML = `<a href="${reportUrl}" target="_blank" rel="noopener">View Report JSON</a>`;
-    } else {
-      reportLinkEl.textContent = '—';
-    }
-  }
-
-  loadMetadata();
+  // 🔗 Pointer section (static for now)
+  const pointerIndex="https://chocolate-added-bovid-122.mypinata.cloud/ipfs/bafybeicdsqfj4672wp7kbnh4n2yri3sd5yxfjwhrsurpnkiejasctldpm4/index.json";
+  const pointerGallery="https://chocolate-added-bovid-122.mypinata.cloud/ipfs/bafybeicdsqfj4672wp7kbnh4n2yri3sd5yxfjwhrsurpnkiejasctldpm4/gallery";
+  const pointerLogs="https://chocolate-added-bovid-122.mypinata.cloud/ipfs/bafkreidxt26qgpf766t7n7l5m7dbc6hodog5qfsnl33dk2md3oey2yjtlu";
+  const groupFolder="https://chocolate-added-bovid-122.mypinata.cloud/ipfs/bafybeicdsqfj4672wp7kbnh4n2yri3sd5yxfjwhrsurpnkiejasctldpm4/";
+  pointerLinksEl.innerHTML=`
+    <a href="${groupFolder}" target="_blank" rel="noopener">Group Folder</a> |
+    <a href="${pointerIndex}" target="_blank" rel="noopener">Index</a> |
+    <a href="${pointerGallery}" target="_blank" rel="noopener">Gallery</a> |
+    <a href="${pointerLogs}" target="_blank" rel="noopener">Logs</a>
+  `;
+}
+loadMetadata();
 </script>
-
-
 </body>
 </html>
