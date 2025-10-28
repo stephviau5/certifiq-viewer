@@ -15,5 +15,7 @@
     {"trait_type": "Version", "value": "CertifIQ v1.2"}
   ],
   "report_url": "https://chocolate-added-bovid-122.mypinata.cloud/ipfs/bafybeicdsqfj4672wp7kbnh4n2yri3sd5yxfjwhrsurpnkiejasctldpm4/report.json",
-  "updatable_pointer": "https://w3s.link/ipns/k51qzi5uqu5dhjv8pxqzz35hsjf71h5v8sa4w40o04ut7ysf1nb6kkn5i08la5"
+  "updatable_pointer": "https://w3s.link/ipns/k51qzi5uqu5dhjv8pxqzz35hsjf71h5v8sa4w40o04ut7ysf1nb6kkn5i08la5",
+  "pointer": "ipfs://bafybeicdsqfj4672wp7kbnh4n2yri3sd5yxfjwhrsurpnkiejasctldpm4/index.json"
+
 }
